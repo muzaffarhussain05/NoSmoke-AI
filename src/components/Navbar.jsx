@@ -16,7 +16,7 @@ import {
 const Navbar = () => {
   const [user, setUser] = useState(true);
   const [signOut, setSignOut] = useState(false);
-  const [menuHide, setMenuHide] = useState(true);
+  const [menuHide, setMenuHide] = useState(false);
   const location = useLocation();
   const navItems = [
     { path: "/", label: "Home", icon: Home },
@@ -46,14 +46,15 @@ const Navbar = () => {
               </span>
             </div>
             <div className="text-gray-300 hover:bg-gray-700 hover:text-white cursor-pointer block md:hidden">
-              {menuHide ? (
-                <X onClick={() => setMenuHide(false)} />
+              {!menuHide ? (
+                 <Menu onClick={() => setMenuHide(true)} />
               ) : (
-                <Menu onClick={() => setMenuHide(true)} />
+               
+                <X onClick={() => setMenuHide(false)} />
               )}
             </div>
             <div
-              className={`flex items-center max-sm:gap-2 max-sm:items-start space-x-1 max-sm:bg-gray-800  max-sm:absolute max-sm:top-16 max-sm:pt-3 max-sm:w-full max-sm:left-0 max-sm:pl-4 max-sm:pb-4 max-sm:flex-col ${
+              className={`md:flex items-center max-sm:gap-2 max-sm:items-start space-x-1 max-sm:bg-gray-800  max-sm:absolute max-sm:top-16 max-sm:pt-3  max-sm:w-full max-sm:left-0 max-sm:pl-4 max-sm:pb-4 max-sm:flex-col ${
                 menuHide ? "flex" : "hidden"
               } `}
             >
