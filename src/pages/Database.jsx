@@ -6,7 +6,7 @@ import { Plus, Search, X, Edit, Trash2, Upload, User } from "lucide-react";
 
 import { useApp } from "../context/AppContext";
 
-const DatabasePage = () => {
+const Database = () => {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [editingStudent, setEditingStudent] = useState(null);
@@ -507,4 +507,4 @@ const DatabasePage = () => {
   );
 };
 
-export default DatabasePage;
+export default Database;
