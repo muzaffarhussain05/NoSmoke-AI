@@ -77,9 +77,9 @@ const Navbar = () => {
              {user && (
                 <button
                   onClick={signOut}
-                  variant="outline"
-                  size="sm"
-                  className=" space-x-2 md:px-4 md:ml-1 bg-red-800 px-2 max-sm:mt-1 md:py-2 py-1 max-sm:text-sm  cursor-pointer text-white border-gray-600  hover:bg-red-700"
+                 
+                  
+                  className="rounded-lg space-x-2 md:px-4 md:ml-1 bg-red-800 px-2 max-sm:mt-1 md:py-2 py-1 max-sm:text-sm  cursor-pointer text-white border-gray-600  hover:bg-red-700"
                 >
                   Logout
                 </button>

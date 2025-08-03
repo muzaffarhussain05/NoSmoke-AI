@@ -23,7 +23,7 @@ const router = createBrowserRouter(
       <Route path="history" element={<Home />} />
       <Route path="database" element={<Database />} />
       <Route path="admin" element={<AdminLogin />} />
-      <Route path="/about" element={<About />} />
+      <Route path="about" element={<About />} />
     </Route>
   )
 );
