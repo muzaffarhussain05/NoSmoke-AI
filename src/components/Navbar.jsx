@@ -39,12 +39,12 @@ const Navbar = () => {
       <div>
         <nav className="bg-gray-800 border-b border-gray-700 px-6 py-4">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center space-x-2">
+            <Link to="/" className="flex items-center space-x-2">
               <Shield className="h-8 w-8 text-green-400" />
               <span className="text-xl font-bold text-white max-sm:text-sm">
                 NoSmoke-AI
               </span>
-            </div>
+            </Link>
             <div className="text-gray-300 hover:bg-gray-700 hover:text-white cursor-pointer block md:hidden">
               {!menuHide ? (
                  <Menu onClick={() => setMenuHide(true)} />
