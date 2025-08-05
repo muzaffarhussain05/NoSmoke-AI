@@ -13,6 +13,7 @@ import About from "./pages/About";
 import AdminLogin from "./pages/AdminLogin";
 import LiveDetection from "./pages/LiveDetection";
 import Database from "./pages/Database";
+import History from "./pages/History";
 
 // Create router
 const router = createBrowserRouter(
@@ -20,10 +21,13 @@ const router = createBrowserRouter(
     <Route path="/" element={<Layout />}>
       <Route index element={<Home />} />
       <Route path="detection" element={<LiveDetection />} />
-      <Route path="history" element={<Home />} />
+     
       <Route path="database" element={<Database />} />
       <Route path="admin" element={<AdminLogin />} />
       <Route path="about" element={<About />} />
+      <Route path="history" element={<History />} />
+      
+
     </Route>
   )
 );

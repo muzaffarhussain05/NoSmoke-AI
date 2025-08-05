@@ -3,12 +3,12 @@ import { useState, useEffect } from "react";
 import StudentTable from "../components/StudentTable";
 
 import { Plus, Search, X, Edit, Trash2, Upload, User } from "lucide-react";
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+
 import { useApp } from "../context/AppContext";
 
 const Database = () => {
   const [open, setOpen] = useState(false);
+  const [history,setHistory]=useState(true)
   const [searchTerm, setSearchTerm] = useState("");
   const [editingStudent, setEditingStudent] = useState(null);
   const { students, addStudent, updateStudent, deleteStudent } = useApp();
@@ -22,29 +22,6 @@ const Database = () => {
     image: "",
   });
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewStudent((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setNewStudent((prev) => ({
-          ...prev,
-          image: reader.result // Base64 string
-        }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-  
-
   const filteredStudents = students.filter(
     (student) =>
       student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -53,15 +30,16 @@ const Database = () => {
   );
 
   const handleAddStudent = async () => {
-    if (!newStudent.name || !newStudent.rollNo || !newStudent.department || !newStudent.image) {
+    if (!newStudent.name || !newStudent.rollNo || !newStudent.department) {
       toast.error("Please fill in all required fields");
       return;
     }
 
-
-
     const studentData = {
       ...newStudent,
+      image:
+        newStudent.image ||
+        `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face`,
     };
 
     const success = await addStudent(studentData);
@@ -74,7 +52,7 @@ const Database = () => {
         phone: "",
         image: "",
       });
-      setOpen(false);
+      setIsAddDialogOpen(false);
       toast.success("Student added successfully");
     } else {
       toast.error("Failed to add student");
@@ -93,7 +71,7 @@ const Database = () => {
   const handleEditStudent = (student) => {
     setEditingStudent(student);
     setNewStudent(student);
-    setOpen(true);
+    setIsAddDialogOpen(true);
   };
 
   const handleUpdateStudent = async () => {
@@ -110,7 +88,7 @@ const Database = () => {
         phone: "",
         image: "",
       });
-      setOpen(false);
+      setIsAddDialogOpen(false);
       toast.success("Student information updated");
     } else {
       toast.error("Failed to update student");
@@ -122,10 +100,10 @@ const Database = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl mb-2 sm:mb-4 text-green-400">
-            Students Database
+            Detection History
           </h1>
           <p className="text-gray-300 text-sm sm:text-base">
-            Manage student records for face recognition system
+           view and manage smoking violation detection log
           </p>
         </div>
 
@@ -343,49 +321,24 @@ const Database = () => {
                   <form action="">
                     <div className="space-y-4">
                       <input
-                     value={newStudent.name}
-                        onChange={handleInputChange}
-                        name="name"
                         placeholder="Full Name"
                         className="w-full p-2 bg-gray-700 border border-gray-600 text-white rounded"
                       />
                       <input
-                       value={newStudent.rollNo}
-                        onChange={handleInputChange}
-                        name="rollNo"
                         placeholder="Roll No."
                         className="w-full p-2 bg-gray-700 border border-gray-600 text-white rounded"
                       />
                       <input
-                    value={newStudent.department}
-                        onChange={handleInputChange}
-                        name="department"
                         placeholder="Department"
                         className="w-full p-2 bg-gray-700 border border-gray-600 text-white rounded"
                       />
                       <input
-                      value={newStudent.email}
-                        onChange={handleInputChange}
-                        name="email"
-                        placeholder="Email"
+                        placeholder="Phone No"
                         className="w-full p-2 bg-gray-700 border border-gray-600 text-white rounded"
                       />
                       <input
-                       value={newStudent.phone}
-                        onChange={handleInputChange}
-                        name="phone"
-                        placeholder="phone"
+                        placeholder="Upload Image"
                         className="w-full p-2 bg-gray-700 border border-gray-600 text-white rounded"
-                      />
-
-                      <input
-                        
-                        placeholder="upload profile"
-                        type="file"
-                        name="image"
-                        className="bg-gray-600 px-2 py-2 text-gray-300 cursor-pointer hover:border hover:border-gray-100"
-                        accept="image/*"
-                        onChange={handleImageChange}
                       />
                     </div>
                   </form>
@@ -397,11 +350,9 @@ const Database = () => {
                   >
                     <X className="h-6 w-5" />
                   </button>
-                  {editingStudent ?(<button className="bg-green-600 hover:bg-green-700 py-1 rounded-sm px-3 cursor-pointer" onClick={handleUpdateStudent}>
-                    Update Student 
-                  </button>):(<button className="bg-green-600 hover:bg-green-700 py-1 rounded-sm px-3 cursor-pointer" onClick={handleAddStudent}>
+                  <button className="bg-green-600 hover:bg-green-700 py-1 rounded-sm px-3 cursor-pointer">
                     Add Student
-                  </button>)}
+                  </button>
                 </div>
               </div>
             </div>
@@ -414,15 +365,13 @@ const Database = () => {
             <div className="bg-gray-700 flex-6 flex items-center justify-items-start max-sm:justify-center w-full relative rounded-2xl border border-gray-600">
               <input
                 type="text"
-                value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
                 className="flex-5 md:px-10 pl-6 py-2 max-sm:text-sm text-left md:py-2 rounded-2xl placeholder:text-gray-400 focus:outline-none text-gray-100 focus:border-2 max-sm:placeholder:text-[12px]"
                 placeholder="search by name,roll numbers or department..."
               />
-              <Search className="absolute max-sm:left-[6px] md:left-3 text-gray-400  max-sm:h-4 max-sm:top-[12px] max-sm:w-3  " />
+              <Search className="absolute max-sm:left-[6px] md:left-12 text-gray-400  max-sm:h-4 max-sm:top-[16px] max-sm:w-4 " />
             </div>
             <div className="border-2 border-gray-700 text-white px-2 py-2 rounded-lg">
-            {filteredStudents.length} students
+              1 students
             </div>
           </div>
           {/* search bar */}
@@ -436,7 +385,7 @@ const Database = () => {
                 filteredStudents={filteredStudents}
                 handleEditStudent={handleEditStudent}
                 handleDeleteStudent={handleDeleteStudent}
-               
+                history={history}
               />
             </div>
           </div>
