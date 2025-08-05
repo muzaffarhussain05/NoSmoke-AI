@@ -2,13 +2,24 @@ import { useState, useEffect } from "react";
 
 import StudentTable from "../components/StudentTable";
 
-import { Plus, Search, X, Edit, Trash2, Upload, User } from "lucide-react";
+import {
+  Plus,
+  Search,
+  X,
+  Edit,
+  Trash2,
+  ChevronDown,
+  Upload,
+  User,
+  Funnel,
+  Calendar,
+} from "lucide-react";
 
 import { useApp } from "../context/AppContext";
 
 const Database = () => {
   const [open, setOpen] = useState(false);
-  const [history,setHistory]=useState(true)
+  const [history, setHistory] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [editingStudent, setEditingStudent] = useState(null);
   const { students, addStudent, updateStudent, deleteStudent } = useApp();
@@ -103,187 +114,11 @@ const Database = () => {
             Detection History
           </h1>
           <p className="text-gray-300 text-sm sm:text-base">
-           view and manage smoking violation detection log
+            view and manage smoking violation detection log
           </p>
         </div>
 
         {/* Search and Add Controls */}
-        {/* <div className="bg-gray-800 border-gray-700 mb-6 sm:mb-8">
-          <div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-white">
-              <span className="flex items-center text-lg sm:text-xl">
-                <User className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                Student Management
-              </span>
-              <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                <DialogTrigger asChild>
-                  <button className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-sm sm:text-base">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Student
-                  </button>
-                </DialogTrigger>
-                <DialogContent className="bg-gray-800 border-gray-700 text-white max-w-lg mx-4 sm:mx-auto">
-                  <DialogHeader>
-                    <DialogTitle className="text-lg sm:text-xl">
-                      {editingStudent ? "Edit Student" : "Add New Student"}
-                    </DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4 max-h-96 overflow-y-auto">
-                    <div>
-                      <label htmlFor="name" className="text-sm">
-                        Full Name *
-                      </label>
-                      <input
-                        id="name"
-                        value={newStudent.name}
-                        onChange={(e) =>
-                          setNewStudent({ ...newStudent, name: e.target.value })
-                        }
-                        className="bg-gray-700 border-gray-600 text-white text-sm"
-                        placeholder="Enter student's full name"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="rollNo" className="text-sm">
-                        Roll Number *
-                      </label>
-                      <input
-                        id="rollNo"
-                        value={newStudent.rollNo}
-                        onChange={(e) =>
-                          setNewStudent({
-                            ...newStudent,
-                            rollNo: e.target.value,
-                          })
-                        }
-                        className="bg-gray-700 border-gray-600 text-white text-sm"
-                        placeholder="e.g., ST001"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="department" className="text-sm">
-                        Department *
-                      </label>
-                      <input
-                        id="department"
-                        value={newStudent.department}
-                        onChange={(e) =>
-                          setNewStudent({
-                            ...newStudent,
-                            department: e.target.value,
-                          })
-                        }
-                        className="bg-gray-700 border-gray-600 text-white text-sm"
-                        placeholder="e.g., Computer Science"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="email" className="text-sm">
-                        Email
-                      </label>
-                      <input
-                        id="email"
-                        type="email"
-                        value={newStudent.email}
-                        onChange={(e) =>
-                          setNewStudent({
-                            ...newStudent,
-                            email: e.target.value,
-                          })
-                        }
-                        className="bg-gray-700 border-gray-600 text-white text-sm"
-                        placeholder="student@university.edu"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="phone" className="text-sm">
-                        Phone
-                      </label>
-                      <input
-                        id="phone"
-                        value={newStudent.phone}
-                        onChange={(e) =>
-                          setNewStudent({
-                            ...newStudent,
-                            phone: e.target.value,
-                          })
-                        }
-                        className="bg-gray-700 border-gray-600 text-white text-sm"
-                        placeholder="+1234567890"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="image" className="text-sm">
-                        Profile Image URL
-                      </label>
-                      <input
-                        id="image"
-                        value={newStudent.image}
-                        onChange={(e) =>
-                          setNewStudent({
-                            ...newStudent,
-                            image: e.target.value,
-                          })
-                        }
-                        className="bg-gray-700 border-gray-600 text-white text-sm"
-                        placeholder="Image URL or upload file"
-                      />
-                    </div>
-                    <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 pt-4">
-                      <button
-                        variant="outline"
-                        onClick={() => {
-                          setIsAddDialogOpen(false);
-                          setEditingStudent(null);
-                          setNewStudent({
-                            name: "",
-                            rollNo: "",
-                            department: "",
-                            email: "",
-                            phone: "",
-                            image: "",
-                          });
-                        }}
-                        className="w-full sm:w-auto border-gray-600 text-gray-300 hover:bg-gray-700 text-sm"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={
-                          editingStudent
-                            ? handleUpdateStudent
-                            : handleAddStudent
-                        }
-                        className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-sm"
-                      >
-                        {editingStudent ? "Update" : "Add"} Student
-                      </button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-          </div>
-          <div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
-              <div className="relative flex-1 w-full">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <input
-                  placeholder="Search by name, roll number, or department..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 bg-gray-700 border-gray-600 text-white text-sm"
-                />
-              </div>
-              <div
-                variant="outline"
-                className="border-gray-600 text-gray-300 text-sm"
-              >
-                {filteredStudents.length} students
-              </div>
-            </div>
-          </div>
-        </div> */}
 
         {/* <StudentPage /> */}
 
@@ -292,8 +127,8 @@ const Database = () => {
           <div className="flex justify-between items-center">
             <div>
               <span className="flex items-center text-lg max-sm:text-sm text-white">
-                <User className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                Student Management
+                <Funnel className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                Filter & Search
               </span>
             </div>
             <div>
@@ -361,18 +196,23 @@ const Database = () => {
 
           {/* search bar */}
 
-          <div className="flex items-center gap-7 mt-8 md:px-2 max-sm:flex-col ">
-            <div className="bg-gray-700 flex-6 flex items-center justify-items-start max-sm:justify-center w-full relative rounded-2xl border border-gray-600">
+          <div className="flex items-center justify-between gap-6 md:gap-17 mt-8 md:px-2 max-sm:flex-col ">
+            <div className="bg-gray-700  flex items-center justify-items-start max-sm:justify-center flex-1 relative rounded-2xl border border-gray-600 md:px-12 hover:border-1 hover:border-gray-400">
               <input
                 type="text"
-                className="flex-5 md:px-10 pl-6 py-2 max-sm:text-sm text-left md:py-2 rounded-2xl placeholder:text-gray-400 focus:outline-none text-gray-100 focus:border-2 max-sm:placeholder:text-[12px]"
+                className=" md:px-3  py-2 max-sm:text-sm text-left md:py-2 rounded-2xl placeholder:text-gray-400 focus:outline-none text-gray-100 max-sm:placeholder:pl-8 max-sm:placeholder:text-[12px]"
                 placeholder="search by name,roll numbers or department..."
               />
-              <Search className="absolute max-sm:left-[6px] md:left-12 text-gray-400  max-sm:h-4 max-sm:top-[16px] max-sm:w-4 " />
+              <Search className="absolute max-sm:left-[6px] md:left-3 text-gray-400  max-sm:h-4  max-sm:w-4 " />
             </div>
-            <div className="border-2 border-gray-700 text-white px-2 py-2 rounded-lg">
-              1 students
+
+            <div className="bg-gray-700 gap-13 px-4 justify-around flex items-center  max-sm:justify-center  relative rounded-2xl border border-gray-600 flex-1 text-white py-2 cursor-pointer hover:border-1 hover:border-gray-400">
+              All Dates <ChevronDown className="text-gray-500"/>
             </div>
+            <div className=" text-white px-2 py-2 rounded-lg flex gap-2 items-center flex-1">
+              <Calendar /> 1 records found
+            </div>
+            
           </div>
           {/* search bar */}
         </div>
