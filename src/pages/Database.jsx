@@ -331,6 +331,14 @@ const Database = () => {
                         placeholder="Department"
                         className="w-full p-2 bg-gray-700 border border-gray-600 text-white rounded"
                       />
+                      <input
+                        placeholder="Phone No"
+                        className="w-full p-2 bg-gray-700 border border-gray-600 text-white rounded"
+                      />
+                      <input
+                        placeholder="Upload Image"
+                        className="w-full p-2 bg-gray-700 border border-gray-600 text-white rounded"
+                      />
                     </div>
                   </form>
                 </div>
