@@ -1,13 +1,13 @@
-import { useState, useEffect } from "react";
-
+import { useState, useMemo } from "react";
 import StudentTable from "../components/StudentTable";
-
+import "react-calendar/dist/Calendar.css";
 import {
   Plus,
   Search,
   X,
   Edit,
   Trash2,
+  Download,
   ChevronDown,
   Upload,
   User,
@@ -16,94 +16,165 @@ import {
 } from "lucide-react";
 
 import { useApp } from "../context/AppContext";
+import { DateRange } from "react-date-range";
+import "react-date-range/dist/styles.css"; // main style file
+import "react-date-range/dist/theme/default.css"; // theme css file
 
-const Database = () => {
-  const [open, setOpen] = useState(false);
-  const [history, setHistory] = useState(true);
+// normalize any Date / timestamp to local YYYY-MM-DD (not UTC)
+function toLocalISODate(value) {
+  if (!value) return null;
+  const d = value instanceof Date ? value : new Date(value);
+  if (isNaN(d.getTime())) return null;
+  const tzOffset = d.getTimezoneOffset() * 60000; // minutes -> ms
+  const local = new Date(d.getTime() - tzOffset);
+  return local.toISOString().split("T")[0];
+}
+
+const History = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [editingStudent, setEditingStudent] = useState(null);
-  const { students, addStudent, updateStudent, deleteStudent } = useApp();
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState("all");
+  const { detections } = useApp();
 
-  const [newStudent, setNewStudent] = useState({
-    name: "",
-    rollNo: "",
-    department: "",
-    email: "",
-    phone: "",
-    image: "",
-  });
+  // DateRange state (react-date-range)
+  const [state, setState] = useState([
+    {
+      startDate: new Date(),
+      endDate: new Date(),
+      key: "selection",
+    },
+  ]);
 
-  const filteredStudents = students.filter(
-    (student) =>
-      student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.rollNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.department.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [appliedRange, setAppliedRange] = useState(null);
+  const [isSingleDay, setIsSingleDay] = useState(false);
 
-  const handleAddStudent = async () => {
-    if (!newStudent.name || !newStudent.rollNo || !newStudent.department) {
-      toast.error("Please fill in all required fields");
+  // Apply the current calendar selection as an "applied range"
+  const handleSearch = () => {
+    setShowCalendar(false);
+    const start = toLocalISODate(state[0].startDate);
+    const end = toLocalISODate(state[0].endDate);
+
+    if (!start || !end) {
+      setAppliedRange(null);
+      setIsSingleDay(false);
       return;
     }
 
-    const studentData = {
-      ...newStudent,
-      image:
-        newStudent.image ||
-        `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face`,
-    };
-
-    const success = await addStudent(studentData);
-    if (success) {
-      setNewStudent({
-        name: "",
-        rollNo: "",
-        department: "",
-        email: "",
-        phone: "",
-        image: "",
-      });
-      setIsAddDialogOpen(false);
-      toast.success("Student added successfully");
-    } else {
-      toast.error("Failed to add student");
-    }
+    setAppliedRange({ start, end });
+    setIsSingleDay(start === end);
   };
 
-  const handleDeleteStudent = async (rollNo) => {
-    const success = await deleteStudent(rollNo);
-    if (success) {
-      toast.success("Student removed from database");
-    } else {
-      toast.error("Failed to remove student");
-    }
-  };
+  // Memoize detectionHistory mapping
+  const detectionHistory = useMemo(() => {
+    return (detections || []).map((detection) => {
+      const timestamp = detection?.timestamp || new Date().toISOString();
+      const dateObj = new Date(timestamp);
+      const isValidDate = !isNaN(dateObj.getTime());
+      const fallbackDate = new Date();
 
-  const handleEditStudent = (student) => {
-    setEditingStudent(student);
-    setNewStudent(student);
-    setIsAddDialogOpen(true);
-  };
+      const dateIso = isValidDate
+        ? toLocalISODate(dateObj)
+        : toLocalISODate(fallbackDate);
 
-  const handleUpdateStudent = async () => {
-    if (!editingStudent) return;
+      const timeStr = isValidDate
+        ? dateObj.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          })
+        : fallbackDate.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          });
 
-    const success = await updateStudent(editingStudent.rollNo, newStudent);
-    if (success) {
-      setEditingStudent(null);
-      setNewStudent({
-        name: "",
-        rollNo: "",
-        department: "",
-        email: "",
-        phone: "",
-        image: "",
-      });
-      setIsAddDialogOpen(false);
-      toast.success("Student information updated");
-    } else {
-      toast.error("Failed to update student");
-    }
+      return {
+        id: detection?.id ?? Math.random(),
+        timestamp: detection?.timestamp ?? null,
+        time: timeStr, // e.g. "03:30 PM"
+        date: dateIso, // e.g. "2025-07-06" (local)
+        image: detection?.image || "",
+        name: detection?.name || "Unknown",
+        id_number: detection?.rollNo || "Unknown",
+        rollNo: detection?.rollNo || null,
+        department: detection?.department || "",
+        email: detection?.email || "",
+        phone: detection?.phone || "",
+        smokingDetected: !!detection?.smokingDetected,
+        faceDetected: !!detection?.faceDetected,
+        actionTaken: detection?.actionTaken || "No action",
+        confidence:
+          detection?.confidence != null
+            ? Math.round(detection.confidence * 100)
+            : 0, // percent integer
+      };
+    });
+  }, [detections]);
+
+  // Memoize filteredHistory (search + status + date-range / single-day)
+  const filteredHistory = useMemo(() => {
+    const term = (searchTerm || "").toLowerCase().trim();
+
+    return detectionHistory.filter((record) => {
+      const matchesSearch =
+        (record.name || "").toLowerCase().includes(term) ||
+        (record.id_number || "").toLowerCase().includes(term) ||
+        (record.rollNo || "").toString().toLowerCase().includes(term) ||
+        (record.department || "").toLowerCase().includes(term) ||
+        (record.email || "").toLowerCase().includes(term) ||
+        (record.phone || "").toLowerCase().includes(term);
+
+      const matchesStatus =
+        statusFilter === "all" ||
+        (statusFilter === "smoking" && record.smokingDetected) ||
+        (statusFilter === "clear" && !record.smokingDetected);
+
+      // date matching using appliedRange (inclusive)
+      let matchesDate = true;
+      const recordDate = toLocalISODate(record.timestamp ?? record.date);
+
+      if (appliedRange?.start && appliedRange?.end) {
+        matchesDate =
+          recordDate >= appliedRange.start && recordDate <= appliedRange.end;
+      } else if (dateFilter && dateFilter !== "all") {
+        matchesDate = recordDate === dateFilter;
+      }
+
+      return matchesSearch && matchesStatus && matchesDate;
+    });
+  }, [detectionHistory, searchTerm, statusFilter, dateFilter, appliedRange]);
+
+  const exportToCsv = () => {
+    const csvContent = [
+      [
+        "Time",
+        "Date",
+        "Name",
+        "ID",
+        "Smoking Detected",
+        "Action Taken",
+        "Confidence",
+      ].join(","),
+      ...filteredHistory.map((record) =>
+        [
+          record.time,
+          record.date,
+          record.name,
+          record.id_number,
+          record.smokingDetected ? "Yes" : "No",
+          record.actionTaken,
+          `${record.confidence}%`,
+        ].join(",")
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "detection_history.csv";
+    a.click();
   };
 
   return (
@@ -114,16 +185,11 @@ const Database = () => {
             Detection History
           </h1>
           <p className="text-gray-300 text-sm sm:text-base">
-            view and manage smoking violation detection log
+            View and manage smoking violation detection logs
           </p>
         </div>
 
-        {/* Search and Add Controls */}
-
-        {/* <StudentPage /> */}
-
         <div className="bg-gray-800 border-gray-700 px-5 py-6 rounded-lg mb-8">
-          {/* top start */}
           <div className="flex justify-between items-center">
             <div>
               <span className="flex items-center text-lg max-sm:text-sm text-white">
@@ -133,228 +199,119 @@ const Database = () => {
             </div>
             <div>
               <button
-                className="flex items-center  md:text-lg max-sm:text-sm bg-green-600 text-white md:px-3 px-1 py-1.5 rounded-xl cursor-pointer hover:bg-green-700 "
-                onClick={() => setOpen(true)}
+                className="flex items-center md:text-lg max-sm:text-sm bg-green-600 text-white md:px-3 px-1 py-1.5 rounded-xl cursor-pointer hover:bg-green-700"
+                onClick={exportToCsv}
               >
-                <Plus className="md:mr-2 h-4 w-4" />
+                <Download className="md:mr-2 h-4 w-4" />
                 <span className="md:text-lg max-sm:text-[12px]">
-                  {" "}
-                  Add Student
+                  Export CSV
                 </span>
               </button>
             </div>
           </div>
 
-          {open && (
-            <div>
-              <div
-                onClick={() => setOpen(false)}
-                className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+          <div className="flex items-center justify-between gap-6 md:gap-17 mt-8 md:px-2 max-sm:flex-col">
+            <div className="bg-gray-700 flex items-center justify-items-start max-sm:justify-center flex-1 relative rounded-2xl border border-gray-600 md:px-12 hover:border-1 hover:border-gray-400">
+              <input
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                type="text"
+                className="md:px-3 py-2 max-sm:text-sm text-left md:py-2 rounded-2xl placeholder:text-gray-400 focus:outline-none text-gray-100 max-sm:placeholder:pl-8 max-sm:placeholder:text-[12px]"
+                placeholder="search by name, roll number or department..."
               />
-              <div className="fixed top-1/2 left-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 bg-gray-800 border border-gray-700 text-white rounded-lg p-6 shadow-lg flex flex-col gap-5">
-                <div>
-                  <form action="">
-                    <div className="space-y-4">
-                      <input
-                        placeholder="Full Name"
-                        className="w-full p-2 bg-gray-700 border border-gray-600 text-white rounded"
-                      />
-                      <input
-                        placeholder="Roll No."
-                        className="w-full p-2 bg-gray-700 border border-gray-600 text-white rounded"
-                      />
-                      <input
-                        placeholder="Department"
-                        className="w-full p-2 bg-gray-700 border border-gray-600 text-white rounded"
-                      />
-                      <input
-                        placeholder="Phone No"
-                        className="w-full p-2 bg-gray-700 border border-gray-600 text-white rounded"
-                      />
-                      <input
-                        placeholder="Upload Image"
-                        className="w-full p-2 bg-gray-700 border border-gray-600 text-white rounded"
-                      />
-                    </div>
-                  </form>
+              <Search className="absolute max-sm:left-[6px] md:left-3 text-gray-400 max-sm:h-4 max-sm:w-4" />
+            </div>
+
+            <div className="bg-gray-700 gap-13 px-4 justify-around flex items-center max-sm:justify-center relative rounded-2xl border border-gray-600 flex-1 text-white py-2">
+              <span>Date Range Picker</span>
+              <ChevronDown
+                className="text-gray-500 cursor-pointer hover:border-1 hover:border-gray-400"
+                onClick={() => setShowCalendar((prev) => !prev)}
+              />
+              {showCalendar && (
+                <div className="absolute top-12 z-20 bg-gray-300 flex flex-col items-center gap-2 py-3 px-2 justify-center rounded">
+                  <DateRange
+                    editableDateInputs={true}
+                    onChange={(item) => setState([item.selection])}
+                    moveRangeOnFirstSelection={false}
+                    ranges={state}
+                    className="rounded-md"
+                  />
+
+                  <p className="text-black text-center text-[14px] font-bold ">
+                    Selected: {state[0].startDate.toDateString()} -{" "}
+                    {state[0].endDate.toDateString()}
+                  </p>
+
+                  <div className="flex gap-2">
+                    <button
+                      className="flex gap-1 items-center bg-green-600 px-2 rounded py-1 cursor-pointer hover:bg-green-900"
+                      onClick={handleSearch}
+                    >
+                      <Search />
+                      Search
+                    </button>
+                    <button
+                      className="flex gap-1 items-center bg-red-600 px-2 rounded py-1 cursor-pointer hover:bg-red-800"
+                      onClick={() => {
+                        setAppliedRange(null);
+                        setIsSingleDay(false);
+                        setShowCalendar(false);
+                      }}
+                    >
+                      Clear
+                    </button>
+                  </div>
                 </div>
-                <div className="flex  items-center gap-2">
-                  <button
-                    className="bg-red-600 py-1 rounded-sm px-3 cursor-pointer hover:bg-red-700"
-                    onClick={() => setOpen(false)}
-                  >
-                    <X className="h-6 w-5" />
-                  </button>
-                  <button className="bg-green-600 hover:bg-green-700 py-1 rounded-sm px-3 cursor-pointer">
-                    Add Student
-                  </button>
-                </div>
-              </div>
+              )}
+            </div>
+
+            <div className="text-white px-2 py-2 rounded-lg flex gap-2 items-center flex-1">
+              <Calendar /> {filteredHistory.length} records found
+            </div>
+          </div>
+
+          {/* show applied range */}
+          {appliedRange && (
+            <div className="mt-3 text-sm text-gray-300 flex items-center gap-3">
+              {isSingleDay ? (
+                <span>
+                  Showing records for <strong>{appliedRange.start}</strong>
+                </span>
+              ) : (
+                <span>
+                  Showing records from <strong>{appliedRange.start}</strong> to{" "}
+                  <strong>{appliedRange.end}</strong>
+                </span>
+              )}
+              <button
+                onClick={() => {
+                  setAppliedRange(null);
+                  setIsSingleDay(false);
+                }}
+                className="text-xs underline ml-2"
+              >
+                Clear range
+              </button>
             </div>
           )}
-          {/* top end */}
-
-          {/* search bar */}
-
-          <div className="flex items-center justify-between gap-6 md:gap-17 mt-8 md:px-2 max-sm:flex-col ">
-            <div className="bg-gray-700  flex items-center justify-items-start max-sm:justify-center flex-1 relative rounded-2xl border border-gray-600 md:px-12 hover:border-1 hover:border-gray-400">
-              <input
-                type="text"
-                className=" md:px-3  py-2 max-sm:text-sm text-left md:py-2 rounded-2xl placeholder:text-gray-400 focus:outline-none text-gray-100 max-sm:placeholder:pl-8 max-sm:placeholder:text-[12px]"
-                placeholder="search by name,roll numbers or department..."
-              />
-              <Search className="absolute max-sm:left-[6px] md:left-3 text-gray-400  max-sm:h-4  max-sm:w-4 " />
-            </div>
-
-            <div className="bg-gray-700 gap-13 px-4 justify-around flex items-center  max-sm:justify-center  relative rounded-2xl border border-gray-600 flex-1 text-white py-2 cursor-pointer hover:border-1 hover:border-gray-400">
-              All Dates <ChevronDown className="text-gray-500"/>
-            </div>
-            <div className=" text-white px-2 py-2 rounded-lg flex gap-2 items-center flex-1">
-              <Calendar /> 1 records found
-            </div>
-            
-          </div>
-          {/* search bar */}
         </div>
 
-        {/* student manangmet */}
         <div className="bg-gray-800 border-gray-700 px-4 py-6 rounded-lg ">
           <div className="p-0">
             <div className="overflow-x-auto">
               <StudentTable
-                filteredStudents={filteredStudents}
-                handleEditStudent={handleEditStudent}
-                handleDeleteStudent={handleDeleteStudent}
-                history={history}
+                filteredHistory={filteredHistory}
+                detectionHistory={detectionHistory}
+                history={true}
+                detections={detections}
               />
             </div>
           </div>
         </div>
-        {/* Students Table */}
-        {/* <div className="bg-gray-800 border-gray-700">
-          <div className="p-0">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-gray-700">
-                    <TableHead className="text-gray-300 text-xs sm:text-sm">
-                      Photo
-                    </TableHead>
-                    <TableHead className="text-gray-300 text-xs sm:text-sm">
-                      Name
-                    </TableHead>
-                    <TableHead className="text-gray-300 text-xs sm:text-sm hidden sm:table-cell">
-                      Roll No.
-                    </TableHead>
-                    <TableHead className="text-gray-300 text-xs sm:text-sm hidden md:table-cell">
-                      Department
-                    </TableHead>
-                    <TableHead className="text-gray-300 text-xs sm:text-sm hidden lg:table-cell">
-                      Contact
-                    </TableHead>
-                    <TableHead className="text-gray-300 text-xs sm:text-sm hidden xl:table-cell">
-                      Status
-                    </TableHead>
-                    <TableHead className="text-gray-300 text-xs sm:text-sm">
-                      Actions
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredStudents.length === 0 ? (
-                    <TableRow className="border-gray-700">
-                      <TableCell
-                        colSpan={7}
-                        className="text-center text-gray-400 py-8 text-sm"
-                      >
-                        No students found. Add students to the database for face
-                        recognition.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredStudents.map((student) => (
-                      <TableRow
-                        key={student.id}
-                        className="border-gray-700 hover:bg-gray-750"
-                      >
-                        <TableCell>
-                          <ImageWithFallback
-                            src={
-                              student.image ||
-                              "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face"
-                            }
-                            alt={student.name}
-                            className="w-8 h-8 sm:w-12 sm:h-12 rounded-full object-cover"
-                          />
-                        </TableCell>
-                        <TableCell className="text-white text-xs sm:text-sm">
-                          <div>
-                            <div className="font-medium">{student.name}</div>
-                            <div className="text-xs text-gray-400 sm:hidden">
-                              {student.rollNo}
-                            </div>
-                            <div className="text-xs text-gray-400 md:hidden">
-                              {student.department}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-gray-300 text-xs sm:text-sm hidden sm:table-cell">
-                          {student.rollNo}
-                        </TableCell>
-                        <TableCell className="text-gray-300 text-xs sm:text-sm hidden md:table-cell">
-                          {student.department}
-                        </TableCell>
-                        <TableCell className="text-gray-300 text-xs sm:text-sm hidden lg:table-cell">
-                          <div>
-                            <div>{student.email}</div>
-                            <div className="text-gray-400">{student.phone}</div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="hidden xl:table-cell">
-                          <div
-                            variant={
-                              student.status === "Active"
-                                ? "default"
-                                : "secondary"
-                            }
-                            className="text-xs"
-                          >
-                            {student.status}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex space-x-1 sm:space-x-2">
-                            <button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleEditStudent(student)}
-                              className="border-gray-600 text-gray-300 hover:bg-gray-700 p-1 sm:p-2"
-                            >
-                              <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
-                            </button>
-                            <button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() =>
-                                handleDeleteStudent(student.rollNo)
-                              }
-                              className="p-1 sm:p-2"
-                            >
-                              <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
-                            </button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
-        </div> */}
       </div>
     </div>
   );
 };
 
-export default Database;
+export default History;
