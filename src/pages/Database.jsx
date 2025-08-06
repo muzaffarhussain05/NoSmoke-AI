@@ -1,10 +1,8 @@
-import { useState, useEffect } from "react";
-
+import { useState } from "react";
 import StudentTable from "../components/StudentTable";
-
 import { Plus, Search, X, Edit, Trash2, Upload, User } from "lucide-react";
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { useApp } from "../context/AppContext";
 
 const Database = () => {
@@ -31,34 +29,38 @@ const Database = () => {
   };
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setNewStudent((prev) => ({
           ...prev,
-          image: reader.result // Base64 string
+          image: reader.result, // Base64 string
         }));
       };
       reader.readAsDataURL(file);
     }
   };
-  
 
-  const filteredStudents = students.filter(
-    (student) =>
-      student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.rollNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.department.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredStudents = (students || []).filter((student) => {
+    const term = (searchTerm || "").toLowerCase();
+    return (
+      (student.name || "").toLowerCase().includes(term) ||
+      (student.rollNo || "").toLowerCase().includes(term) ||
+      (student.department || "").toLowerCase().includes(term)
+    );
+  });
 
   const handleAddStudent = async () => {
-    if (!newStudent.name || !newStudent.rollNo || !newStudent.department || !newStudent.image) {
+    if (
+      !newStudent.name ||
+      !newStudent.rollNo ||
+      !newStudent.department ||
+      !newStudent.image
+    ) {
       toast.error("Please fill in all required fields");
       return;
     }
-
-
 
     const studentData = {
       ...newStudent,
@@ -129,188 +131,7 @@ const Database = () => {
           </p>
         </div>
 
-        {/* Search and Add Controls */}
-        {/* <div className="bg-gray-800 border-gray-700 mb-6 sm:mb-8">
-          <div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-white">
-              <span className="flex items-center text-lg sm:text-xl">
-                <User className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                Student Management
-              </span>
-              <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                <DialogTrigger asChild>
-                  <button className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-sm sm:text-base">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Student
-                  </button>
-                </DialogTrigger>
-                <DialogContent className="bg-gray-800 border-gray-700 text-white max-w-lg mx-4 sm:mx-auto">
-                  <DialogHeader>
-                    <DialogTitle className="text-lg sm:text-xl">
-                      {editingStudent ? "Edit Student" : "Add New Student"}
-                    </DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4 max-h-96 overflow-y-auto">
-                    <div>
-                      <label htmlFor="name" className="text-sm">
-                        Full Name *
-                      </label>
-                      <input
-                        id="name"
-                        value={newStudent.name}
-                        onChange={(e) =>
-                          setNewStudent({ ...newStudent, name: e.target.value })
-                        }
-                        className="bg-gray-700 border-gray-600 text-white text-sm"
-                        placeholder="Enter student's full name"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="rollNo" className="text-sm">
-                        Roll Number *
-                      </label>
-                      <input
-                        id="rollNo"
-                        value={newStudent.rollNo}
-                        onChange={(e) =>
-                          setNewStudent({
-                            ...newStudent,
-                            rollNo: e.target.value,
-                          })
-                        }
-                        className="bg-gray-700 border-gray-600 text-white text-sm"
-                        placeholder="e.g., ST001"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="department" className="text-sm">
-                        Department *
-                      </label>
-                      <input
-                        id="department"
-                        value={newStudent.department}
-                        onChange={(e) =>
-                          setNewStudent({
-                            ...newStudent,
-                            department: e.target.value,
-                          })
-                        }
-                        className="bg-gray-700 border-gray-600 text-white text-sm"
-                        placeholder="e.g., Computer Science"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="email" className="text-sm">
-                        Email
-                      </label>
-                      <input
-                        id="email"
-                        type="email"
-                        value={newStudent.email}
-                        onChange={(e) =>
-                          setNewStudent({
-                            ...newStudent,
-                            email: e.target.value,
-                          })
-                        }
-                        className="bg-gray-700 border-gray-600 text-white text-sm"
-                        placeholder="student@university.edu"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="phone" className="text-sm">
-                        Phone
-                      </label>
-                      <input
-                        id="phone"
-                        value={newStudent.phone}
-                        onChange={(e) =>
-                          setNewStudent({
-                            ...newStudent,
-                            phone: e.target.value,
-                          })
-                        }
-                        className="bg-gray-700 border-gray-600 text-white text-sm"
-                        placeholder="+1234567890"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="image" className="text-sm">
-                        Profile Image URL
-                      </label>
-                      <input
-                        id="image"
-                        value={newStudent.image}
-                        onChange={(e) =>
-                          setNewStudent({
-                            ...newStudent,
-                            image: e.target.value,
-                          })
-                        }
-                        className="bg-gray-700 border-gray-600 text-white text-sm"
-                        placeholder="Image URL or upload file"
-                      />
-                    </div>
-                    <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 pt-4">
-                      <button
-                        variant="outline"
-                        onClick={() => {
-                          setIsAddDialogOpen(false);
-                          setEditingStudent(null);
-                          setNewStudent({
-                            name: "",
-                            rollNo: "",
-                            department: "",
-                            email: "",
-                            phone: "",
-                            image: "",
-                          });
-                        }}
-                        className="w-full sm:w-auto border-gray-600 text-gray-300 hover:bg-gray-700 text-sm"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={
-                          editingStudent
-                            ? handleUpdateStudent
-                            : handleAddStudent
-                        }
-                        className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-sm"
-                      >
-                        {editingStudent ? "Update" : "Add"} Student
-                      </button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-          </div>
-          <div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
-              <div className="relative flex-1 w-full">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <input
-                  placeholder="Search by name, roll number, or department..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 bg-gray-700 border-gray-600 text-white text-sm"
-                />
-              </div>
-              <div
-                variant="outline"
-                className="border-gray-600 text-gray-300 text-sm"
-              >
-                {filteredStudents.length} students
-              </div>
-            </div>
-          </div>
-        </div> */}
-
-        {/* <StudentPage /> */}
-
         <div className="bg-gray-800 border-gray-700 px-5 py-6 rounded-lg mb-8">
-          {/* top start */}
           <div className="flex justify-between items-center">
             <div>
               <span className="flex items-center text-lg max-sm:text-sm text-white">
@@ -320,14 +141,22 @@ const Database = () => {
             </div>
             <div>
               <button
-                className="flex items-center  md:text-lg max-sm:text-sm bg-green-600 text-white md:px-3 px-1 py-1.5 rounded-xl cursor-pointer hover:bg-green-700 "
-                onClick={() => setOpen(true)}
+                className="flex items-center md:text-lg max-sm:text-sm bg-green-600 text-white md:px-3 px-1 py-1.5 rounded-xl cursor-pointer hover:bg-green-700"
+                onClick={() => {
+                  setOpen(true);
+                  setEditingStudent(null);
+                  setNewStudent({
+                    name: "",
+                    rollNo: "",
+                    department: "",
+                    email: "",
+                    phone: "",
+                    image: "",
+                  });
+                }}
               >
                 <Plus className="md:mr-2 h-4 w-4" />
-                <span className="md:text-lg max-sm:text-[12px]">
-                  {" "}
-                  Add Student
-                </span>
+                <span className="md:text-lg max-sm:text-[12px]">Add Student</span>
               </button>
             </div>
           </div>
@@ -340,46 +169,44 @@ const Database = () => {
               />
               <div className="fixed top-1/2 left-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 bg-gray-800 border border-gray-700 text-white rounded-lg p-6 shadow-lg flex flex-col gap-5">
                 <div>
-                  <form action="">
+                  <form>
                     <div className="space-y-4">
                       <input
-                     value={newStudent.name}
+                        value={newStudent.name}
                         onChange={handleInputChange}
                         name="name"
                         placeholder="Full Name"
                         className="w-full p-2 bg-gray-700 border border-gray-600 text-white rounded"
                       />
                       <input
-                       value={newStudent.rollNo}
+                        value={newStudent.rollNo}
                         onChange={handleInputChange}
                         name="rollNo"
                         placeholder="Roll No."
                         className="w-full p-2 bg-gray-700 border border-gray-600 text-white rounded"
                       />
                       <input
-                    value={newStudent.department}
+                        value={newStudent.department}
                         onChange={handleInputChange}
                         name="department"
                         placeholder="Department"
                         className="w-full p-2 bg-gray-700 border border-gray-600 text-white rounded"
                       />
                       <input
-                      value={newStudent.email}
+                        value={newStudent.email}
                         onChange={handleInputChange}
                         name="email"
                         placeholder="Email"
                         className="w-full p-2 bg-gray-700 border border-gray-600 text-white rounded"
                       />
                       <input
-                       value={newStudent.phone}
+                        value={newStudent.phone}
                         onChange={handleInputChange}
                         name="phone"
-                        placeholder="phone"
+                        placeholder="Phone"
                         className="w-full p-2 bg-gray-700 border border-gray-600 text-white rounded"
                       />
-
                       <input
-                        
                         placeholder="upload profile"
                         type="file"
                         name="image"
@@ -390,45 +217,50 @@ const Database = () => {
                     </div>
                   </form>
                 </div>
-                <div className="flex  items-center gap-2">
+                <div className="flex items-center gap-2">
                   <button
                     className="bg-red-600 py-1 rounded-sm px-3 cursor-pointer hover:bg-red-700"
                     onClick={() => setOpen(false)}
                   >
                     <X className="h-6 w-5" />
                   </button>
-                  {editingStudent ?(<button className="bg-green-600 hover:bg-green-700 py-1 rounded-sm px-3 cursor-pointer" onClick={handleUpdateStudent}>
-                    Update Student 
-                  </button>):(<button className="bg-green-600 hover:bg-green-700 py-1 rounded-sm px-3 cursor-pointer" onClick={handleAddStudent}>
-                    Add Student
-                  </button>)}
+                  {editingStudent ? (
+                    <button
+                      className="bg-green-600 hover:bg-green-700 py-1 rounded-sm px-3 cursor-pointer"
+                      onClick={handleUpdateStudent}
+                    >
+                      Update Student
+                    </button>
+                  ) : (
+                    <button
+                      className="bg-green-600 hover:bg-green-700 py-1 rounded-sm px-3 cursor-pointer"
+                      onClick={handleAddStudent}
+                    >
+                      Add Student
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
           )}
-          {/* top end */}
-
-          {/* search bar */}
 
           <div className="flex items-center gap-7 mt-8 md:px-2 max-sm:flex-col ">
             <div className="bg-gray-700 flex-6 flex items-center justify-items-start max-sm:justify-center w-full relative rounded-2xl border border-gray-600">
               <input
                 type="text"
                 value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="flex-5 md:px-10 pl-6 py-2 max-sm:text-sm text-left md:py-2 rounded-2xl placeholder:text-gray-400 focus:outline-none text-gray-100 focus:border-2 max-sm:placeholder:text-[12px]"
                 placeholder="search by name,roll numbers or department..."
               />
-              <Search className="absolute max-sm:left-[6px] md:left-3 text-gray-400  max-sm:h-4 max-sm:top-[12px] max-sm:w-3  " />
+              <Search className="absolute max-sm:left-[6px] md:left-3 text-gray-400  max-sm:h-4 max-sm:top-[12px] max-sm:w-3" />
             </div>
             <div className="border-2 border-gray-700 text-white px-2 py-2 rounded-lg">
-            {filteredStudents.length} students
+              {filteredStudents.length} students
             </div>
           </div>
-          {/* search bar */}
         </div>
 
-        {/* student manangmet */}
         <div className="bg-gray-800 border-gray-700 px-4 py-6 rounded-lg ">
           <div className="p-0">
             <div className="overflow-x-auto">
@@ -436,133 +268,10 @@ const Database = () => {
                 filteredStudents={filteredStudents}
                 handleEditStudent={handleEditStudent}
                 handleDeleteStudent={handleDeleteStudent}
-               
               />
             </div>
           </div>
         </div>
-        {/* Students Table */}
-        {/* <div className="bg-gray-800 border-gray-700">
-          <div className="p-0">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-gray-700">
-                    <TableHead className="text-gray-300 text-xs sm:text-sm">
-                      Photo
-                    </TableHead>
-                    <TableHead className="text-gray-300 text-xs sm:text-sm">
-                      Name
-                    </TableHead>
-                    <TableHead className="text-gray-300 text-xs sm:text-sm hidden sm:table-cell">
-                      Roll No.
-                    </TableHead>
-                    <TableHead className="text-gray-300 text-xs sm:text-sm hidden md:table-cell">
-                      Department
-                    </TableHead>
-                    <TableHead className="text-gray-300 text-xs sm:text-sm hidden lg:table-cell">
-                      Contact
-                    </TableHead>
-                    <TableHead className="text-gray-300 text-xs sm:text-sm hidden xl:table-cell">
-                      Status
-                    </TableHead>
-                    <TableHead className="text-gray-300 text-xs sm:text-sm">
-                      Actions
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredStudents.length === 0 ? (
-                    <TableRow className="border-gray-700">
-                      <TableCell
-                        colSpan={7}
-                        className="text-center text-gray-400 py-8 text-sm"
-                      >
-                        No students found. Add students to the database for face
-                        recognition.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredStudents.map((student) => (
-                      <TableRow
-                        key={student.id}
-                        className="border-gray-700 hover:bg-gray-750"
-                      >
-                        <TableCell>
-                          <ImageWithFallback
-                            src={
-                              student.image ||
-                              "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face"
-                            }
-                            alt={student.name}
-                            className="w-8 h-8 sm:w-12 sm:h-12 rounded-full object-cover"
-                          />
-                        </TableCell>
-                        <TableCell className="text-white text-xs sm:text-sm">
-                          <div>
-                            <div className="font-medium">{student.name}</div>
-                            <div className="text-xs text-gray-400 sm:hidden">
-                              {student.rollNo}
-                            </div>
-                            <div className="text-xs text-gray-400 md:hidden">
-                              {student.department}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-gray-300 text-xs sm:text-sm hidden sm:table-cell">
-                          {student.rollNo}
-                        </TableCell>
-                        <TableCell className="text-gray-300 text-xs sm:text-sm hidden md:table-cell">
-                          {student.department}
-                        </TableCell>
-                        <TableCell className="text-gray-300 text-xs sm:text-sm hidden lg:table-cell">
-                          <div>
-                            <div>{student.email}</div>
-                            <div className="text-gray-400">{student.phone}</div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="hidden xl:table-cell">
-                          <div
-                            variant={
-                              student.status === "Active"
-                                ? "default"
-                                : "secondary"
-                            }
-                            className="text-xs"
-                          >
-                            {student.status}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex space-x-1 sm:space-x-2">
-                            <button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleEditStudent(student)}
-                              className="border-gray-600 text-gray-300 hover:bg-gray-700 p-1 sm:p-2"
-                            >
-                              <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
-                            </button>
-                            <button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() =>
-                                handleDeleteStudent(student.rollNo)
-                              }
-                              className="p-1 sm:p-2"
-                            >
-                              <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
-                            </button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
-        </div> */}
       </div>
     </div>
   );

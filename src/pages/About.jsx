@@ -91,7 +91,7 @@ const About = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           <div className="mb-8 sm:mb-12 text-center">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl mb-4 sm:mb-6 bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent font-bold">
-              About AinoSmoke
+              About NoSmoke-AI
             </h1>
             <p className="text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto px-4">
               An innovative AI-powered solution for detecting and preventing

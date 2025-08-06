@@ -12,10 +12,10 @@ import {
   LogOut,
 } from "lucide-react";
 
-
+import { useApp } from "../context/AppContext";
 const Navbar = () => {
-  const [user, setUser] = useState(true);
-  const [signOut, setSignOut] = useState(false);
+  const { user, signOut, signUp } = useApp();
+ 
   const [menuHide, setMenuHide] = useState(false);
   const location = useLocation();
   const navItems = [

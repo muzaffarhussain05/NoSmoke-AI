@@ -88,94 +88,51 @@ const Home = () => {
           </div>
         </div>
 
-
         {/* Features Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           <div className="bg-gray-800 border border-gray-700 hover:bg-gray-700 transition-colors py-5 px-4 rounded-3xl">
             <div>
               <div className="flex items-center text-green-400 text-lg">
-              <Camera className="mr-2 h-5 w-5" />
-              Real-time Detection
+                <Camera className="mr-2 h-5 w-5" />
+                Real-time Detection
               </div>
               <div className="mt-3">
-              <p className="text-gray-300 text-sm sm:text-base">
-              Advanced AI algorithms continuously monitor camera feeds to detect smoking violations instantly.
-            </p>
+                <p className="text-gray-300 text-sm sm:text-base">
+                  Advanced AI algorithms continuously monitor camera feeds to
+                  detect smoking violations instantly.
+                </p>
               </div>
             </div>
           </div>
           <div className="bg-gray-800  border-gray-700 border hover:bg-gray-700 transition-colors py-5 px-4 rounded-3xl">
             <div>
               <div className="flex items-center  text-blue-400 text-lg">
-              <Users className="mr-2 h-5 w-5" />
+                <Users className="mr-2 h-5 w-5" />
                 Face Recognition
               </div>
               <div className="mt-3">
-              <p className="text-gray-300 text-sm sm:text-base">
-              Identify individuals from a database of registered faces to track violations and ensure accountability.
-            </p>
+                <p className="text-gray-300 text-sm sm:text-base">
+                  Identify individuals from a database of registered faces to
+                  track violations and ensure accountability.
+                </p>
               </div>
             </div>
           </div>
           <div className="bg-gray-800 border-gray-700 border hover:bg-gray-700 transition-colors py-5 px-4 rounded-3xl">
             <div>
               <div className="flex items-center text-red-400 text-lg">
-              <AlertTriangle className="mr-2 h-5 w-5" />
+                <AlertTriangle className="mr-2 h-5 w-5" />
                 Automated Alerts
               </div>
               <div className="mt-3">
-              <p className="text-gray-300 text-sm sm:text-base">
-              A Automatic notifications via email or SMS when violations are detected, enabling rapid response.
-            </p>
+                <p className="text-gray-300 text-sm sm:text-base">
+                  A Automatic notifications via email or SMS when violations are
+                  detected, enabling rapid response.
+                </p>
               </div>
             </div>
           </div>
-          </div>
-          
-
-        {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-        <Card className="bg-gray-800 border-gray-700 hover:bg-gray-750 transition-colors">
-          <CardHeader>
-            <CardTitle className="flex items-center text-green-400 text-lg">
-              <Camera className="mr-2 h-5 w-5" />
-              Real-time Detection
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-300 text-sm sm:text-base">
-              Advanced AI algorithms continuously monitor camera feeds to detect smoking violations instantly.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gray-800 border-gray-700 hover:bg-gray-750 transition-colors">
-          <CardHeader>
-            <CardTitle className="flex items-center text-blue-400 text-lg">
-              <Users className="mr-2 h-5 w-5" />
-              Face Recognition
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-300 text-sm sm:text-base">
-              Identify individuals from a database of registered faces to track violations and ensure accountability.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gray-800 border-gray-700 hover:bg-gray-750 transition-colors md:col-span-2 lg:col-span-1">
-          <CardHeader>
-            <CardTitle className="flex items-center text-red-400 text-lg">
-              <AlertTriangle className="mr-2 h-5 w-5" />
-              Automated Alerts
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-300 text-sm sm:text-base">
-              Automatic notifications via email or SMS when violations are detected, enabling rapid response.
-            </p>
-          </CardContent>
-        </Card>
-      </div> */}
+        </div>
       </div>
     </div>
   );
