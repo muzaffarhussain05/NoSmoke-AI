@@ -1,6 +1,9 @@
 import React from "react";
 import { Edit, Trash2 } from "lucide-react";
 
+import imag1 from "../../../backend/screenshots/cigarette_detected_20250924_010851_47d6d48f.jpg";
+
+// import img1 from "screenshots"
 /**
  * Props:
  *  - filteredStudents: array (for DB view)
@@ -88,6 +91,9 @@ export default function StudentTable({
                   </TableRow>
                 ) : (
                   filteredHistory.map((record, i) => {
+
+                    console.log(record.timestamp);
+                    
                     const timestamp = record.timestamp;
                     const dateObj = new Date(timestamp);
                     const formattedTime = dateObj.toLocaleTimeString([], {
@@ -109,6 +115,7 @@ export default function StudentTable({
                       >
                         <TableCell className="text-white text-xs sm:text-sm hidden lg:table-cell">
                           <div>
+                           
                             <div className="font-medium">
                               {formattedTime ?? "-"}
                             </div>
@@ -119,14 +126,13 @@ export default function StudentTable({
                         </TableCell>
 
                         <TableCell>
-                          <img
-                            src={
-                              record.image ||
-                              "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face"
-                            }
-                            alt={record.name || "Unknown"}
-                            className="w-8 h-8 sm:w-12 sm:h-12 rounded-full object-cover"
-                          />
+                        
+                            <img
+                          src={`http://localhost:8000/screenshots/${record._id}`}
+                              alt={record.name || "Unknown"}
+                              className="w-8 h-8 sm:w-12 sm:h-12 rounded-full object-cover"
+                            />
+                         
                         </TableCell>
 
                         <TableCell className="text-white text-xs sm:text-sm">
@@ -149,9 +155,10 @@ export default function StudentTable({
                         </TableCell>
 
                         <TableCell className="text-green-400 text-xs sm:text-sm hidden lg:table-cell">
-                          {record.confidence != null
-                            ? `${record.confidence}%`
-                            : "-"}
+                    
+                          
+                         {record.confidence != null ? `${Math.round(record.confidence / 100)}%` : "-"}
+
                         </TableCell>
                         <TableCell className="text-gray-300 text-xs sm:text-sm hidden lg:table-cell">
                           <div>
@@ -164,7 +171,7 @@ export default function StudentTable({
 
                         <TableCell>
                           <div className="text-gray-300 text-xs sm:text-sm hidden lg:table-cell">
-                          {record.actionTaken ?? "-"}
+                            {record.actionTaken ?? "-"}
                           </div>
                         </TableCell>
                       </TableRow>
@@ -192,10 +199,7 @@ export default function StudentTable({
                     >
                       <TableCell>
                         <img
-                          src={
-                            student.image ||
-                            "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face"
-                          }
+                          src={student.image}
                           alt={student.name}
                           className="w-8 h-8 sm:w-12 sm:h-12 rounded-full object-cover"
                         />
@@ -243,9 +247,7 @@ export default function StudentTable({
                             <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
                           </button>
                           <button
-                            onClick={() =>
-                              handleDeleteStudent?.(student.rollNo)
-                            }
+                            onClick={() => handleDeleteStudent?.(student._id)}
                             className="text-red-500 hover:bg-gray-900 p-1 sm:p-2 rounded cursor-pointer "
                             title="Delete student"
                           >

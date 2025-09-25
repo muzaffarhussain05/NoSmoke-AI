@@ -67,50 +67,28 @@ const History = () => {
 
   // Memoize detectionHistory mapping
   const detectionHistory = useMemo(() => {
-    return (detections || []).map((detection) => {
-      const timestamp = detection?.timestamp || new Date().toISOString();
-      const dateObj = new Date(timestamp);
-      const isValidDate = !isNaN(dateObj.getTime());
-      const fallbackDate = new Date();
+  return (detections || []).map((detection) => {
+    const timestamp = detection?.timestamp || new Date().toISOString();
+    const dateObj = new Date(timestamp);
 
-      const dateIso = isValidDate
-        ? toLocalISODate(dateObj)
-        : toLocalISODate(fallbackDate);
-
-      const timeStr = isValidDate
-        ? dateObj.toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true,
-          })
-        : fallbackDate.toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true,
-          });
-
-      return {
-        id: detection?.id ?? Math.random(),
-        timestamp: detection?.timestamp ?? null,
-        time: timeStr, // e.g. "03:30 PM"
-        date: dateIso, // e.g. "2025-07-06" (local)
-        image: detection?.image || "",
-        name: detection?.name || "Unknown",
-        id_number: detection?.rollNo || "Unknown",
-        rollNo: detection?.rollNo || null,
-        department: detection?.department || "",
-        email: detection?.email || "",
-        phone: detection?.phone || "",
-        smokingDetected: !!detection?.smokingDetected,
-        faceDetected: !!detection?.faceDetected,
-        actionTaken: detection?.actionTaken || "No action",
-        confidence:
-          detection?.confidence != null
-            ? Math.round(detection.confidence * 100)
-            : 0, // percent integer
-      };
-    });
-  }, [detections]);
+    return {
+      _id: detection._id, // use DB _id
+      timestamp: detection.timestamp,
+      time: dateObj.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true }),
+      date: toLocalISODate(dateObj),
+      image: detection.image, // or leave blank if you load from backend
+      name: detection.name || "Unknown",
+      rollNo: detection.rollNo || null,
+      department: detection.department || "",
+      email: detection.email || "",
+      phone: detection.phone || "",
+      smokingDetected: !!detection.smokingDetected,
+      faceDetected: !!detection.faceDetected,
+      actionTaken: detection.actionTaken || "No action",
+      confidence: detection.confidence != null ? Math.round(detection.confidence * 100) : 0,
+    };
+  });
+}, [detections]);
 
   // Memoize filteredHistory (search + status + date-range / single-day)
   const filteredHistory = useMemo(() => {

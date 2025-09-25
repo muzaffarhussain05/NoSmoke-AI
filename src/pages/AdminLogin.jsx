@@ -27,7 +27,7 @@ const AdminLogin = () => {
           "Invalid credentials. Please try admin@ainosmoke.com / admin123"
         );
       }
-    } catch (error) {
+    } catch (e) {
       toast.error("Login failed. Please try again.");
     } finally {
       setIsLoading(false);
@@ -35,27 +35,29 @@ const AdminLogin = () => {
   };
 
   const handleSignUp = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
+  e.preventDefault();
+  setIsLoading(true);
 
-    try {
-      const success = await signUp(
-        credentials.email,
-        credentials.password,
-        name
-      );
-      if (success) {
-        toast.success("Account created successfully! Welcome to AinoSmoke.");
-        navigate("/");
-      } else {
-        toast.error("Failed to create account. Please try again.");
-      }
-    } catch (error) {
-      toast.error("Sign up failed. Please try again.");
-    } finally {
-      setIsLoading(false);
+  try {
+    const result = await signUp(
+      credentials.email,
+      credentials.password,
+      name
+    );
+
+    if (result.success) {
+      toast.success("Account created successfully! Welcome to AinoSmoke.");
+      navigate("/");
+    } else {
+      // Show backend-provided error (e.g., Email already exists)
+      toast.error(result.error || "Failed to create account. Please try again.");
     }
-  };
+  } catch (error) {
+    toast.error(error.message || "Sign up failed. Please try again.");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleLogout = async () => {
     await signOut();

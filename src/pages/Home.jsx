@@ -2,12 +2,10 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Camera, Users, AlertTriangle, Clock } from "lucide-react";
 import { useApp } from "../context/AppContext";
-import { useEffect } from "react";
+
 const Home = () => {
-  const { stats, refreshStats } = useApp();
-  useEffect(() => {
-    refreshStats();
-  }, []);
+  const { stats } = useApp();
+
   const displayStats = [
     {
       title: "Total Detections",

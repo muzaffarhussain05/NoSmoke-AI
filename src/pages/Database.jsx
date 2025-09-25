@@ -83,8 +83,8 @@ const Database = () => {
     }
   };
 
-  const handleDeleteStudent = async (rollNo) => {
-    const success = await deleteStudent(rollNo);
+  const handleDeleteStudent = async (_id) => {
+    const success = await deleteStudent(_id);
     if (success) {
       toast.success("Student removed from database");
     } else {
@@ -101,7 +101,7 @@ const Database = () => {
   const handleUpdateStudent = async () => {
     if (!editingStudent) return;
 
-    const success = await updateStudent(editingStudent.rollNo, newStudent);
+    const success = await updateStudent(editingStudent._id, newStudent);
     if (success) {
       setEditingStudent(null);
       setNewStudent({
